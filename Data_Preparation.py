@@ -1,4 +1,4 @@
-from pandas import read_csv , DataFrame
+from pandas import read_csv , DataFrame , Timestamp
 from os import listdir
 
 # TODO: Complete the notes
@@ -95,4 +95,6 @@ class Preparation:
                 data_dict , index=data.columns.values[0].split(';')
             ).transpose().sort_index(ascending=False).values,
             columns = data.columns.values[0].split(';')
-        )
+        ).applymap(lambda x : float(x) if x.replace('.','').isdigit() else x).applymap(
+            lambda x : 0 if (type(x) == str and len(x) == 0) else x
+        ).applymap(lambda x : Timestamp(x) if (type(x) == str and ':' in x) else x)
