@@ -33,6 +33,7 @@ class Duration_Consistency:
         plt.xlabel('Position Returns (in pip)')
         plt.ylabel('Position Duration (in minute)')
         plt.tight_layout()
-        plt.show()
+        
+        return plt.show()
 
     
