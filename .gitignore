@@ -1,0 +1,4 @@
+TVenv
+.idea/
+logs/
+*.pyc
