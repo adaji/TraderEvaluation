@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 import datetime
-
+from collections import Counter
+import scipy.stats as ss
 
 class OS_CS:
 
@@ -43,7 +44,37 @@ class OS_CS:
             lambda x: x.floor('Min') if x.second < 30 else x.ceil('Min'))
 
         # Get price for simulated data
-        return simulated_times.applymap(lambda x: price_df.loc[x].values[0])
+        simulated_prices = simulated_times.applymap(lambda x: price_df.loc[x].values[0])
+        return simulated_prices
+    
+    def rank_scenarios(self, simulated_prices: pd.DataFrame, open_strategy: bool)-> pd.Series:
+        return_ =  (self.trading_data.Price.iloc[:,1]/self.trading_data.Price.iloc[:,0]-1)*100  # original return
+        if open_strategy:
+            simulated_returns = ((self.trading_data.Price.iloc[:,1]/simulated_prices.T-1)*100).T
+            simulated_returns["original return"] = return_
+            ranks = simulated_returns.apply(lambda x:ss.rankdata(-x)[-1] , axis = 1)
+        else:
+            simulated_returns = ((simulated_prices.T/self.trading_data.Price.iloc[:,0]-1)*100).T
+            simulated_returns["original return"] = return_
+            ranks = simulated_returns.apply(lambda x:ss.rankdata(-x)[-1] , axis = 1)
+            
+        # Get ranks for simulated data
+        return ranks
+
+    def score_trader(self, ranks: pd.Series)-> pd.DataFrame:
+        score = 11 - ranks
+        avg = np.mean(score)
+        std = np.std(score)
+        result = []
+        index = []
+        for i in Counter(score).keys():
+            result.append("{} Days".format(Counter(score)[i])) 
+            index.append("Score:{}".format(i)) 
+        a = pd.DataFrame(result, index = index )
+        b = pd.DataFrame([avg,std], index = ["Average", "Std"])
+        
+        # Get avertage, std and distribution of trader's score
+        return pd.concat([b,a])
 
     def main(self, open_strategy: bool) -> list:
         # This is the wrapper function. It should be called at __init__ to run all steps
@@ -55,5 +86,6 @@ class OS_CS:
         simulated_prices = self.find_prices(simulated_time)
 
         # Step3: Calculate ranking of every trade between all simulated scenarios
-
+        ranks = self.rank_scenarios(simulated_prices)
         # Step4: Calculate final score (ranking) for the trader
+        score = self.score_trader(ranks)
