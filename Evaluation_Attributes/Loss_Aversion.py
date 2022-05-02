@@ -72,8 +72,8 @@ class Loss_Aversion:
         return plt.show()
         
     
-    
+'''    
 A=Loss_Aversion()    
-A.plot(max_size_plot =2000)
-    
+A.plot(max_size_plot =1000) # You can set  max_size_plot = False if not needed
+'''    
     
