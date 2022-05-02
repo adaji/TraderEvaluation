@@ -105,14 +105,12 @@ class Volatility:
   def _get_symbol_price_API(symbol : str,start_year : int ,start_month : int ,start_day : int  ,for_days : int ) -> pd.DataFrame:
     start_date = datetime.date(start_year, start_month, start_day)
     dc = DataCon('http://185.235.43.95:6263')
-    print(start_date)
     data=pd.DataFrame()
     for i in range(for_days):
       try:
         data = pd.concat([data, dc.get_m1_data(symbol, start_date + datetime.timedelta(days=i))])
       except:
         pass
-    print(data)
     return data
 
   
@@ -128,7 +126,6 @@ class Volatility:
 
     df['log returns'] = np.log(df['close']/df['close'].shift(1))
     volatility = df['log returns'].std()
-    print(volatility)
     return volatility
 
   def _normal_volatility(volatility_data,start_year : int ,start_month : int 
@@ -148,7 +145,6 @@ class Volatility:
 
 
     symbols_df=pd.DataFrame(symbols,columns=['Symbol'])
-    print(symbols_df)
 
 
     symbols_df['volatility']=symbols_df.apply(lambda row: Volatility._calculate_symbol_voliality(str(row['Symbol']),start_year=start_year 
