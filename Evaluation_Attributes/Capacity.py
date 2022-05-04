@@ -7,12 +7,12 @@ import matplotlib.pyplot as plt
 class Capacity:
 
      
-    def __init__(self,rename_cols=True) -> None:
+    def __init__(self,DPeriods,rename_cols=True) -> None:
         
         self.data_set = Preparation(folder_path = 'E:\DFO\TradeEvaluation\Traders csv data')
         self.df= self.data_set.Get
         self.rename_cols=rename_cols
-      
+        self.DPeriods=DPeriods
         
         if self.rename_cols == True:
             cols=pd.Series(self.df.columns)
@@ -57,5 +57,9 @@ class Capacity:
         plt.ylabel('Profit returned')
         plt.legend(labels=lst)
         plt.tight_layout()
-        return plt.show()
+        
+        if self.DPeriods >=12 :
+            return plt.show()
     
+        else:
+            return None
