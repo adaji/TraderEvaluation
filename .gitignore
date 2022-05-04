@@ -2,3 +2,4 @@ TVenv
 .idea/
 logs/
 *.pyc
+env
