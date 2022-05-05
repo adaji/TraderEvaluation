@@ -97,6 +97,8 @@ class Preparation:
             columns = data.columns.values[0].split(';')
         ).applymap(lambda x : float(x.replace(' ','')) if x.replace(' ','').replace('.','').isdigit() else x).applymap(
             lambda x : 0 if (type(x) == str and len(x) == 0) else x
-        ).applymap(lambda x : Timestamp(x) if (type(x) == str and ':' in x) else x)
+        ).applymap(lambda x : Timestamp(x) if (type(x) == str and ':' in x) else x).applymap(
+            lambda x : float(x.replace(' ','')) if (type(x) == str and x.replace(' ','').replace('-','').replace('.','').isdigit()) else x 
+        )
 
         
