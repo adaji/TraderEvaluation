@@ -1,6 +1,6 @@
 # Investable Attributes for Trader Evaluation
 
-    *Attributes :
+    * Attributes :
 
         1 - Experience (Ex) 
         2 - Market Correlation (Mc)
@@ -15,7 +15,7 @@
         11 - Performance (Pf)
         12 - Capacity (Cp)
 
-    *How get information from Attributes :
+    * How get information from Attributes :
 
         -follow TestNote.ipynb
 
@@ -28,5 +28,5 @@
 
 ### Test Notebook : To explain how to interact with functions 
 
-    *All project developers must once completed define the functions
-     Describe how they interact and work with functions in TestNote.ipynb
+    * All project developers must once completed define the functions
+      Describe how they interact and work with functions in TestNote.ipynb
