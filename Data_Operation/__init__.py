@@ -1,5 +1,5 @@
 
-from Data_Preparation import Preparation
+#from Data_Preparation import Preparation
 
-class Trader_Data(Preparation):
-    pass
+#class Trader_Data(Preparation):
+#    pass
