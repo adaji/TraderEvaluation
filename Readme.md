@@ -22,7 +22,7 @@
 ## Pay attention to the env that has this features:
 
     1 - Define env (for better performance create with Anaconda) 
-        *for better performance use python = 3.8 
+        - for better performance use python = 3.8 
 
     2 - install requirements on env 
 
@@ -30,3 +30,4 @@
 
     - All project developers must once completed define the functions
       Describe how they interact and work with functions in TestNote.ipynb
+      
