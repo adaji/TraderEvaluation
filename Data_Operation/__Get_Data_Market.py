@@ -51,4 +51,4 @@ class Market_Data:
                 lambda x : Timestamp(x) if (type(x) == str and ':' in x) else x
             )
         else:
-            raise ValueError('Check  Symbol , Start_Date , End_Data , Interval also url')
+            return SPR.json()['rawdatas']
