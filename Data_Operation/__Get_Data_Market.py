@@ -1,6 +1,7 @@
+from turtle import st
 from pandas import DataFrame , Timestamp
 import requests
-
+from os import getenv
 
 class Market_Data:
     
@@ -9,15 +10,20 @@ class Market_Data:
         Symbol:str,
         Start_Date:str,
         End_Data:str,
-        Interval:str
+        Interval:str,
+        ApiCode_Name_on_dotenv_file:str = "ApiCode",
+        HashCode_Name_on_dotenv_file:str= "HashCode"
     )-> None :
 
         self.__url = Url
+
         self.__parametr = {
             "startdate": Start_Date + 'Z',
             "enddate": End_Data + 'Z',
             "resample": Interval,
-            "instrument": Symbol
+            "instrument": Symbol,
+            "apicode" : str(getenv(ApiCode_Name_on_dotenv_file)),
+            "hashcode" : str(getenv(HashCode_Name_on_dotenv_file))
         }
     
     @property
@@ -26,10 +32,10 @@ class Market_Data:
         try :
             SPR = requests.post(url=self.__url,json=self.__parametr)
         except :
-            raise ValueError('Check connection or URL')
+            raise ValueError('Check connection or URL or Apicode and Hash code')
         
-        if len(SPR.text) > 0:
-            return DataFrame(SPR.json()).applymap(
+        if SPR.json()['rawdatas'] != None:
+            return DataFrame( SPR.json()['rawdatas'] ).applymap(
                 lambda x : Timestamp(x) if (type(x) == str and ':' in x) else x
             )
         else:
