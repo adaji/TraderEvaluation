@@ -1,4 +1,5 @@
-TVenv
+*.pyc
+env
 .idea/
 logs/
-*.pyc
+.ipynb_checkpoints
