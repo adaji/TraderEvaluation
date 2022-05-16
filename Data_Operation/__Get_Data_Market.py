@@ -1,4 +1,4 @@
-from turtle import st
+from numpy import nan
 from pandas import DataFrame , Timestamp
 import requests
 from os import getenv
@@ -51,4 +51,4 @@ class Market_Data:
                 lambda x : Timestamp(x) if (type(x) == str and ':' in x) else x
             )
         else:
-            return SPR.json()['rawdatas']
+            return nan
