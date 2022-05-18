@@ -10,7 +10,7 @@ class Market_Data:
     
 
     def __init__(self,
-        *,Url:str='http://135.181.53.203:8010/dfo_alpha_marketrawdata',
+        *,Url:str='http://135.181.53.203:8010/dfo_alpha_marketrawdatasimple',
         Symbol:str,
         Start_Date:str,
         End_Data:str,
@@ -26,7 +26,6 @@ class Market_Data:
             self.__parametr = {
                 "startdate": Start_Date + 'Z',
                 "enddate": End_Data + 'Z',
-                "resample": Interval,
                 "instrument": Symbol,
                 "apicode" : str(getenv(ApiCode_Name_on_dotenv_file)),
                 "hashcode" : str(getenv(HashCode_Name_on_dotenv_file))
