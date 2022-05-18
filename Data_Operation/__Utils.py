@@ -1,10 +1,37 @@
 from .__Get_Data_Market import Market_Data
 
+def Cal_volatil(
+    *,Base_Pair_Currency:str ='AUDUSD',
+    Pair_Currency:str,
+    Open_Posithon_TimeStamp,
+    Close_Posithon_TimStamp)-> float:
+
+    return float(
+        (
+            Market_Data(
+                Symbol = Pair_Currency,
+                Start_Date = Open_Posithon_TimeStamp.isoformat(),
+                End_Data = Close_Posithon_TimStamp.isoformat(),
+                Interval = '1min'
+            ).send_post_request['close'].pct_change().dropna().std()
+        ) / (
+            Market_Data(
+                Symbol = Base_Pair_Currency,
+                Start_Date = Open_Posithon_TimeStamp.isoformat(),
+                End_Data = Close_Posithon_TimStamp.isoformat(),
+                Interval = '1min'
+            ).send_post_request['close'].pct_change().dropna().std()
+        )
+    )
+    
+###########################################################################
+#/////////////////////////////////////////////////////////////////////////#
+###########################################################################
 
 def Comput_pipV(*,
                 Base_Currency:str='USD',
                 Pair_Currency:str,
-                Target_time:str)->float:
+                Target_time)->float:
     #---------------------------------------------------------
     if len(Pair_Currency) == 6:     
         #---------------------------------------------------------#
