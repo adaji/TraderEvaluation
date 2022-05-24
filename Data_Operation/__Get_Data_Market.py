@@ -4,11 +4,8 @@ import requests
 from os import getenv
 from dotenv import load_dotenv
 
-
 class Market_Data:
     
-    
-
     def __init__(self,
         *,Url:str='http://135.181.53.203:8010/dfo_alpha_marketrawdatasimple',
         Symbol:str,
@@ -52,10 +49,10 @@ class Market_Data:
         else:
             return nan
 
-
-
+#################################################################################################
+#///////////////////////////////////////////////////////////////////////////////////////////////#
+#################################################################################################
 class OpenClose_data:
-
 
     def __init__(self,
         *,Url:str='http://135.181.53.203:8010/dfo_alpha_open_close_strategy',
