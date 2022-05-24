@@ -1,5 +1,102 @@
-from .__Get_Data_Market import Market_Data
+import requests 
+from os import getenv
+from dotenv import load_dotenv
 
+class Comput_pipV:
+    
+    def __init__(self,
+        *,Url:str='http://135.181.53.203:8010/dfo_alpha_marketevaluation/comput_pipv',
+        Base_Currency:str='USD',
+        Pair_Currency:str,
+        Target_time:str,
+        ApiCode_Name_on_dotenv_file:str = "ApiCode",
+        HashCode_Name_on_dotenv_file:str= "HashCode"
+    )-> None :
+
+        self.__envExist = load_dotenv()
+
+        if self.__envExist == True :
+
+            self.__parametr = {
+                "base_currency" : Base_Currency,
+                "pair_currency" : Pair_Currency,
+                "targetdatetime": Target_time + 'Z',
+                "apicode" : str(getenv(ApiCode_Name_on_dotenv_file)),
+                "hashcode" : str(getenv(HashCode_Name_on_dotenv_file))
+            }
+            self.__url = Url
+
+        else :
+
+            raise ValueError(' You must define a .env file ')
+
+    @property
+    def send_post_request(self)-> float:
+
+        try :
+            SPR = requests.post(url=self.__url,json=self.__parametr)
+        except :
+            raise ValueError('Check connection or URL or Apicode and Hash code')
+        
+        if SPR.json()['value'] != None:
+            return float(SPR.json()['value'])
+        
+        else :
+
+            raise ValueError('Check connection or URL or Apicode and Hash code and instrument ')
+
+#################################################################################################
+#///////////////////////////////////////////////////////////////////////////////////////////////#
+#################################################################################################
+class Cal_volatil:
+
+    def __init__(self,
+        *,Url:str='http://135.181.53.203:8010/dfo_alpha_marketevaluation/cal_volatil',
+        Base_Currency:str='AUDUSD',
+        Pair_Currency:str,
+        Start_Date:str,
+        End_Data:str,
+        ApiCode_Name_on_dotenv_file:str = "ApiCode",
+        HashCode_Name_on_dotenv_file:str= "HashCode"
+    )-> None :
+
+        self.__envExist = load_dotenv()
+
+        if self.__envExist == True :
+
+            self.__parametr = {
+                "base_currency" : Base_Currency,
+                "pair_currency" : Pair_Currency,
+                "startdate": Start_Date + 'Z',
+                "enddate" : End_Data + 'Z',
+                "apicode" : str(getenv(ApiCode_Name_on_dotenv_file)),
+                "hashcode" : str(getenv(HashCode_Name_on_dotenv_file))
+            }
+            self.__url = Url
+
+        else :
+
+            raise ValueError(' You must define a .env file ')
+
+    @property
+    def send_post_request(self)-> float:
+
+        try :
+            SPR = requests.post(url=self.__url,json=self.__parametr)
+        except :
+            raise ValueError('Check connection or URL or Apicode and Hash code')
+        
+        if SPR.json()['value'] != None:
+            return float(SPR.json()['value'])
+        
+        else :
+
+            raise ValueError('Check connection or URL or Apicode and Hash code and instrument ')
+
+
+
+
+"""
 def Cal_volatil(
     *,Base_Pair_Currency:str ='AUDUSD',
     Pair_Currency:str,
@@ -102,3 +199,4 @@ def Comput_pipV(*,
                 Interval='1min'
             ).send_post_request['open'].values
         )
+"""
