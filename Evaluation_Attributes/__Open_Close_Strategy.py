@@ -7,11 +7,7 @@ class OS_CS:
 
     def __init__(self, trading_data: pd.DataFrame) -> None:
         trading_data = self.__statement_preprocess(trading_data)
-
-        # Cumulative scores and final scores are accessible from object instance
         self.open_scores, self.close_scores = self.__main(trading_data)
-        # self.final_open_score = self.open_scores.iat[-1, 5]
-        # self.final_close_score = self.close_scores.iat[-1, 5]
 
     @staticmethod
     def __statement_preprocess(trading_data):
@@ -40,37 +36,28 @@ class OS_CS:
             End_Data=x.Time2.strftime("%Y-%m-%dT%H:%M:%S.000"),
         ).send_post_request, axis=1).to_frame()
 
-        # # Selecting only rows with complete data, droping short-term trades & trades with no price data fetched from API
-        # # SHOULD BE CORRECTED - NO SELECTION
-        # prices = prices[prices[0].apply(lambda x: len(x)) == 22]
-        # trading_data = trading_data.loc[prices.index]
-
         # Calculate scores for all scenarios (Score = 11 - rank of each trade among 11 different scenarios)
         # NOTE1: For strategy base price, price fetched from API for Time1/Time2 is used
         # NOTE2: Open_scores/Close_scores range between 0 to 10
-        open_scores = 11 - prices.apply(lambda x: x[0][:11].close.rank(), axis=1)
-        close_scores = 11 - prices.apply(lambda x: x[0][11:].close.rank(ascending=False), axis=1)
-
-        # Change index to Time2
-        open_scores.set_index(trading_data.Time2, inplace=True)
-        close_scores.set_index(trading_data.Time2, inplace=True)
+        # buy_mask shows if trade is buy or sell
+        buy_mask = trading_data.Type.str.contains('buy', case=False)
+        open_scores = 11 - prices.apply(lambda x: x[0]
+                                        [:11].close.rank(ascending=buy_mask[x.name]), axis=1)
+        close_scores = 11 - \
+            prices.apply(lambda x: x[0][11:].close.rank(ascending=not buy_mask[x.name]), axis=1)
 
         # Calculate aggregated mean for scores
         # cumulative_open_scores = open_scores.cumsum().div((open_scores.index.values + 1), axis=0)
         # cumulative_close_scores = close_scores.cumsum().div((close_scores.index.values + 1), axis=0)
 
-        # Returning cumulative score for open & close strategies
         return (open_scores, close_scores)
 
     @property
     def plot_open_strategy(self) -> plt.scatter:
-        # Calculate average score for trades that close at the same second
-        y = self.open_scores.groupby('Time2').mean()
-        plt.plot(list(set(range(len(y)))), y)
-        plt.plot(list(set(range(len(y)))), y[5], color='black', linewidth=4)
+        plt.plot(self.open_scores)
+        plt.plot(self.open_scores[5], color='black', linewidth=4)
         plt.legend(['-50%', '-40%', '-30%', '-20%', '-10%', 'Strategy', '+10%', '+20%',
                     '+30%', '+40%', '+50%'], loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.xticks(list(set(range(len(y)))), labels=y.index, rotation='vertical')
         plt.title('Open Strategy Chart')
         plt.xlabel('Position Close Dates')
         plt.ylabel('Score')
@@ -79,13 +66,10 @@ class OS_CS:
 
     @property
     def plot_close_strategy(self) -> plt.scatter:
-        # Calculate average score for trades that close at the same second
-        y = self.close_scores.groupby('Time2').mean()
-        plt.plot(list(set(range(len(y)))), y)
-        plt.plot(list(set(range(len(y)))), y[16], color='black', linewidth=4)
+        plt.plot(self.close_scores)
+        plt.plot(self.close_scores[16], color='black', linewidth=4)
         plt.legend(['-50%', '-40%', '-30%', '-20%', '-10%', 'Strategy', '+10%', '+20%',
                     '+30%', '+40%', '+50%'], loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.xticks(list(set(range(len(y)))), labels=y.index, rotation='vertical')
         plt.title('Close Strategy Chart')
         plt.xlabel('Position Close Dates')
         plt.ylabel('Score')
