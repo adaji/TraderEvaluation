@@ -1,5 +1,5 @@
 from pandas import DataFrame
-
+from numpy import nan
 
 class Loss_Aversion:
 
@@ -12,5 +12,5 @@ class Loss_Aversion:
         dataframe['Balance'] = dataframe['Profit'].cumsum()
 
         return dataframe.loc[:,['Volume','Balance','Price']].applymap(
-            lambda x : np.nan if x == 0 else x
+            lambda x : nan if x == 0 else x
         ).dropna().loc[:,'Balance'].pct_change().dropna()
