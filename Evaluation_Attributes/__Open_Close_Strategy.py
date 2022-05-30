@@ -5,9 +5,12 @@ import matplotlib.pyplot as plt
 
 class OS_CS:
 
-    def __init__(self, trading_data: pd.DataFrame) -> None:
+    def __init__(self, trading_data: pd.DataFrame, window_periods=100, plot_unit='S') -> None:
+        self.window_periods = window_periods
+        self.plot_unit = plot_unit
+
         trading_data = self.__statement_preprocess(trading_data)
-        self.open_scores, self.close_scores = self.__main(trading_data)
+        self.__main(trading_data)
 
     @staticmethod
     def __statement_preprocess(trading_data):
@@ -27,8 +30,7 @@ class OS_CS:
 
         return trading_data
 
-    @staticmethod
-    def __main(trading_data: pd.DataFrame) -> list:
+    def __main(self, trading_data: pd.DataFrame) -> None:
         # Fetch prices from server
         prices = trading_data.apply(lambda x: OpenClose_data(
             Symbol=x.Symbol,
@@ -41,24 +43,60 @@ class OS_CS:
         # NOTE2: Open_scores/Close_scores range between 0 to 10
         # buy_mask shows if trade is buy or sell
         buy_mask = trading_data.Type.str.contains('buy', case=False)
-        open_scores = 11 - prices.apply(lambda x: x[0]
-                                        [:11].close.rank(ascending=buy_mask[x.name]), axis=1)
-        close_scores = 11 - \
+        self.open_scores = 11 - prices.apply(lambda x: x[0]
+                                             [:11].close.rank(ascending=buy_mask[x.name]), axis=1)
+        self.close_scores = 11 - \
             prices.apply(lambda x: x[0][11:].close.rank(ascending=not buy_mask[x.name]), axis=1)
 
         # Calculate aggregated mean for scores
-        # cumulative_open_scores = open_scores.cumsum().div((open_scores.index.values + 1), axis=0)
-        # cumulative_close_scores = close_scores.cumsum().div((close_scores.index.values + 1), axis=0)
+        self.cumulative_open_scores = self.open_scores.cumsum().div((self.open_scores.index.values + 1), axis=0)
+        self.cumulative_close_scores = self.close_scores.cumsum().div((self.close_scores.index.values + 1), axis=0)
 
-        return (open_scores, close_scores)
+        # Calculate aggregated mean for scores with MOVING AVERAGE
+        divisor = pd.Series(self.open_scores.index).apply(
+            lambda x: x+1 if x < self.window_periods else self.window_periods)
+        self.ma_cumulative_open_scores = self.open_scores.rolling(
+            min_periods=1, window=self.window_periods).sum().div(divisor, axis=0)
+        self.ma_cumulative_close_scores = self.close_scores.rolling(
+            min_periods=1, window=self.window_periods).sum().div(divisor, axis=0)
+
+        # Rounding x-axis for plot based on unit
+        if self.plot_unit == 'per_trade':
+            x = pd.Series(self.open_scores.index, name='Time2')
+        else:
+            x = trading_data.Time2.dt.round(self.plot_unit)
+
+        # Aggregate scores on base unit
+        self.open_scores = self.open_scores.set_index(x).groupby('Time2').mean()
+        self.close_scores = self.close_scores.set_index(x).groupby('Time2').mean()
+
+        self.cumulative_open_scores = self.cumulative_open_scores.set_index(
+            x).groupby('Time2').mean()
+        self.cumulative_close_scores = self.cumulative_close_scores.set_index(
+            x).groupby('Time2').mean()
+
+        self.ma_cumulative_open_scores = self.ma_cumulative_open_scores.set_index(
+            x).groupby('Time2').mean()
+        self.ma_cumulative_close_scores = self.ma_cumulative_close_scores.set_index(
+            x).groupby('Time2').mean()
+
+        # Finding final scores
+        self.final_open_score = self.cumulative_open_scores.iat[-1, 5]
+        self.final_close_score = self.cumulative_close_scores.iat[-1, 5]
 
     @property
     def plot_open_strategy(self) -> plt.scatter:
-        plt.plot(self.open_scores)
-        plt.plot(self.open_scores[5], color='black', linewidth=4)
+        for i in range(11):
+            if i == 5:
+                plt.plot(self.cumulative_open_scores[i], color='black', linewidth=4)
+            else:
+                plt.plot(self.cumulative_open_scores[i])
+
+        if self.plot_unit != 'per_trade':
+            plt.xticks(rotation=90)
         plt.legend(['-50%', '-40%', '-30%', '-20%', '-10%', 'Strategy', '+10%', '+20%',
                     '+30%', '+40%', '+50%'], loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.title('Open Strategy Chart')
+        plt.title('Open Strategy Chart - Accumulative Average')
         plt.xlabel('Position Close Dates')
         plt.ylabel('Score')
 
@@ -66,11 +104,53 @@ class OS_CS:
 
     @property
     def plot_close_strategy(self) -> plt.scatter:
-        plt.plot(self.close_scores)
-        plt.plot(self.close_scores[16], color='black', linewidth=4)
+        for i in range(11, 22):
+            if i == 16:
+                plt.plot(self.cumulative_close_scores[i], color='black', linewidth=4)
+            else:
+                plt.plot(self.cumulative_close_scores[i])
+
+        if self.plot_unit != 'per_trade':
+            plt.xticks(rotation=90)
         plt.legend(['-50%', '-40%', '-30%', '-20%', '-10%', 'Strategy', '+10%', '+20%',
                     '+30%', '+40%', '+50%'], loc='center left', bbox_to_anchor=(1, 0.5))
-        plt.title('Close Strategy Chart')
+        plt.title('Close Strategy Chart - Accumulative Average')
+        plt.xlabel('Position Close Dates')
+        plt.ylabel('Score')
+
+        return plt.show()
+
+    @property
+    def plot_open_strategy_moving_average(self) -> plt.scatter:
+        for i in range(11):
+            if i == 5:
+                plt.plot(self.ma_cumulative_open_scores[i], color='black', linewidth=4)
+            else:
+                plt.plot(self.ma_cumulative_open_scores[i])
+
+        if self.plot_unit != 'per_trade':
+            plt.xticks(rotation=90)
+        plt.legend(['-50%', '-40%', '-30%', '-20%', '-10%', 'Strategy', '+10%', '+20%',
+                    '+30%', '+40%', '+50%'], loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.title('Open Strategy Chart - Moving Average')
+        plt.xlabel('Position Close Dates')
+        plt.ylabel('Score')
+
+        return plt.show()
+
+    @property
+    def plot_close_strategy_moving_average(self) -> plt.scatter:
+        for i in range(11, 22):
+            if i == 16:
+                plt.plot(self.ma_cumulative_close_scores[i], color='black', linewidth=4)
+            else:
+                plt.plot(self.ma_cumulative_close_scores[i])
+
+        if self.plot_unit != 'per_trade':
+            plt.xticks(rotation=90)
+        plt.legend(['-50%', '-40%', '-30%', '-20%', '-10%', 'Strategy', '+10%', '+20%',
+                    '+30%', '+40%', '+50%'], loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.title('Close Strategy Chart - Moving Average')
         plt.xlabel('Position Close Dates')
         plt.ylabel('Score')
 
